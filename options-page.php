@@ -65,7 +65,8 @@ class MuSiteAliasesOptionsPage {
   <h4>Create a new alias</h4>
   <form id="new-alias-form" method="post">
     <?php echo get_blog_details(1)->domain . get_blog_details(1)->path; ?><input type="text" name="alias" />
-  <button type="submit">Create Alias</button>
+    <input type="hidden" name="action" value="create" />
+    <button type="submit">Create Alias</button>
   </form>
   
   <div>

@@ -20,6 +20,10 @@ class MuSiteAliases {
       $this->flash = 'The alias "' . $path . '" has already been taken';
       return false; 
     }
+    elseif (preg_match('/[^0-9A-Z-]/i', $path)) {
+      $this->flash = 'Aliases may only contain letters, numbers and hyphens';
+      return false;   
+    }
     else {
       global $wpdb;
       global $blog_id;
