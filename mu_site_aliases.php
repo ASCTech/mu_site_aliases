@@ -6,12 +6,13 @@ Description: Allows users to create alias paths for their sites
 Author: John Colvin
 */
 global $wpdb;
-define('MU_SITE_ALIAS_TABLE', $wpdb->prefix . 'mu_site_aliases');
+define('MU_SITE_ALIAS_TABLE', $wpdb->get_blog_prefix(1) . 'mu_site_aliases');
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'options-page.php');
 
 class MuSiteAliases {
 
   function MuSiteAliases() {
-    $this->flash = '';  
+    $this->flash = '';
   }
 
   function createAlias($path) {
@@ -44,22 +45,32 @@ class MuSiteAliases {
     $sql = 'DELETE FROM ' . MU_SITE_ALIAS_TABLE . ' WHERE `alias` = "' . $path . '"';
     $wpdb->query($sql);
   }
-
+  
   function resolveAlias($path) {
     global $wpdb;
-
+    
   $alias_row = $this->findAlias($path);
-
+  
   $sql = 'SELECT * FROM ' . $wpdb->prefix . 'blogs WHERE blog_id = ' . $alias_row->blog_id . '';
   $results = $wpdb->get_results($sql);
-
+  
   if (empty($results)) {
     return false; 
   }
-
+  
     return $results[0]->path;
   }
-
+  
+  function getAliases($blog_id) {
+    global $wpdb;
+    $sql = 'SELECT * FROM ' . MU_SITE_ALIAS_TABLE . ' WHERE `blog_id` = ' . $blog_id;
+    $results = $wpdb->get_results($sql);
+    if (empty($results)) {
+      return array();
+    }
+    return $results;
+  }
+  
   private function findAlias($path) {
   global $wpdb;
     $sql = 'SELECT * FROM ' . MU_SITE_ALIAS_TABLE . ' WHERE `alias` = "' . $path . '" LIMIT 1';
@@ -76,22 +87,25 @@ class MuSiteAliases {
 function mu_site_aliases_install() {
     global $wpdb;
 
-  $sql = "CREATE TABLE IF NOT EXISTS " . MU_SITE_ALIAS_TABLE . " (
-    id mediumint(9) NOT NULL AUTO_INCREMENT,
-    alias varchar(100) DEFAULT '' NOT NULL,
-    blog_id mediumint(9) DEFAULT 1 NOT NULL,
-    UNIQUE KEY id (id)
-  );";
+    $sql = "CREATE TABLE IF NOT EXISTS " . MU_SITE_ALIAS_TABLE . " (
+      id mediumint(9) NOT NULL AUTO_INCREMENT,
+      alias varchar(100) DEFAULT '' NOT NULL,
+      blog_id mediumint(9) DEFAULT 1 NOT NULL,
+      UNIQUE KEY id (id)
+    );";
 
-  require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-  dbDelta($sql);
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
 }
 
 $mu_site_aliases_plugin = new MuSiteAliases;
 register_activation_hook(__FILE__,'mu_site_aliases_install');
 
-add_filter('template_redirect', 'my_404_override');
+if (is_admin()) {
+  $options_page = new MuSiteAliasesOptionsPage();
+}
 
+add_filter('template_redirect', 'my_404_override');
 function my_404_override() {
   global $wp_query;
 
