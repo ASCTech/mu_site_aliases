@@ -42,6 +42,14 @@ class MuSiteAliases {
 
   function deleteAlias($path) {
     global $wpdb;
+    global $blog_id;
+    
+    $alias = $this->findAlias($path);
+    if ($alias->blog_id != $blog_id) {
+      $this->flash = 'You do not have permission to delete this alias';
+      return false; 
+    }
+    
     $sql = 'DELETE FROM ' . MU_SITE_ALIAS_TABLE . ' WHERE `alias` = "' . $path . '"';
     $wpdb->query($sql);
   }
