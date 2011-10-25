@@ -123,13 +123,15 @@ function my_404_override() {
 
   $mu_site_aliases = new MuSiteAliases;
 
-  $path = trim($_SERVER['REQUEST_URI'], '/');
+  $current_site = get_current_site();
+  $path = preg_replace($current_site->path, '', $_SERVER['REQUEST_URI'], 1);
+  $path = trim($path, '/');
 
   if ($mu_site_aliases->aliasExists($path)) {
     status_header(200);
     $wp_query->is_404 = false;
-    $site_url = get_bloginfo('url') . $mu_site_aliases->resolveAlias($path);
-    header('Location:' . $site_url);
+    $site_url = $current_site->domain . $mu_site_aliases->resolveAlias($path);
+    header('Location: http://' . $site_url);
     exit;
   }
 }
