@@ -16,13 +16,21 @@ class MuSiteAliases {
   }
 
   function createAlias($path) {
+
+    $black_list = array('page', 'comments', 'blog', 'files', 'feed', 'help',
+                        'osu_custom', 'wp-admin', 'wp-content', 'wp-includes');
+
     if ($this->aliasExists($path)) {
       $this->flash = 'The alias "' . $path . '" has already been taken';
-      return false; 
+      return false;
     }
     elseif (preg_match('/[^0-9A-Z-]/i', $path)) {
       $this->flash = 'Aliases may only contain letters, numbers and hyphens';
-      return false;   
+      return false;
+    }
+    elseif (in_array($path, $black_list)) {
+      $this->flash = 'This alias is not available';
+      return false;
     }
     else {
       global $wpdb;
@@ -34,7 +42,7 @@ class MuSiteAliases {
       }
       else {
         $this->flash = 'Site alias created successfully';
-        return true;  
+        return true;
       } 
     }
   }
@@ -51,7 +59,7 @@ class MuSiteAliases {
     $alias = $this->findAlias($path);
     if ($alias->blog_id != $blog_id) {
       $this->flash = 'You do not have permission to delete this alias';
-      return false; 
+      return false;
     }
     
     $sql = 'DELETE FROM ' . MU_SITE_ALIAS_TABLE . ' WHERE `alias` = "' . $path . '"';
@@ -67,7 +75,7 @@ class MuSiteAliases {
   $results = $wpdb->get_results($sql);
   
   if (empty($results)) {
-    return false; 
+    return false;
   }
   
     return $results[0]->path;
