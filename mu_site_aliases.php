@@ -24,8 +24,12 @@ class MuSiteAliases {
       $this->flash = 'The alias "' . $path . '" has already been taken';
       return false;
     }
-    elseif (preg_match('/[^0-9A-Z-]/i', $path)) {
-      $this->flash = 'Aliases may only contain letters, numbers and hyphens';
+    elseif (preg_match('/[^0-9A-Z-_.]/i', $path)) {
+      $this->flash = 'Aliases may only contain letters, numbers, hyphens, underscores and periods';
+      return false;
+    }
+    elseif (preg_match('/\.\d+\z/', $path)) {
+      $this->flash = 'Aliases may not look like name.##';
       return false;
     }
     elseif (in_array($path, $black_list)) {
